@@ -1,7 +1,4 @@
-var admin={
- email:'wafaa@example.com',
- password:'wafaa@2000'
-}
+
 var regHirarical={
     admin:['admin','stackholder']
 }
@@ -23,6 +20,5 @@ var roles={
 
 module.exports={
     roles,
-    admin,
     regHirarical
 }

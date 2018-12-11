@@ -9,14 +9,14 @@ module.exports=function(){
     }else{
        
         if(!result){
-          if(!process.env.Email &&process.env.Password){
+          if(!process.env.Fullname &&process.env.Password){
               console.log(("Inside first admin"));
               return false
           }else{
               var user=new User()
               console.log("####################");
               user.createFirstAdmin({
-                  email:process.env.Email,
+                  fullname:process.env.Fullname,
                   password:process.env.Password     
               })
               user.save()

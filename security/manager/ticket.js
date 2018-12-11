@@ -1,34 +1,28 @@
-var jwt = require('jsonwebtoken');
-var config=require('../../config/config')
+var jwt      = require('jsonwebtoken');
+var config   = require('../../config/config.js');
 
-var generateToken=function(user){
-    console.log("ID=======",user._id);
-   
-    if(user._id!=null){
-       return  jwt.sign({ id: user._id }, config.JWTSecret, {
-            expiresIn: 86400 // expires in 24 hours
-          });
-    }else{
-        return false
-    } 
+//check if ticket exists
+var isExists = function(req){
+    if(req.headers.ticket && req.headers.ticket !== undefined){
+        return true;
+    } return false;
 }
 
-
-var verifyToken=function(token){
-
-jwt.verify(token, config.JWTSecret, function(err, decoded) {
-    if (err) {
-        err = {
-          name: 'TokenExpiredError',
-          message: 'jwt expired',
-          expiredAt: 1408621000
-        }
-    }else{
-        return decoded
-    }
-  });
+//sign ticket
+var signTicket = function(data){
+   // console.log(config.JWTsecret);
+    
+    return jwt.sign(data, config.JWTSecret);
 }
-module.exports={
-    generateToken,
-    verifyToken
+
+//return decodedString/false
+var verifiyTicket = function(req){
+    return jwt.verify(req.headers.ticket, config.JWTSecret);
+}
+
+module.exports = {
+    isExists: isExists,
+    sign: signTicket,
+    verifiy: verifiyTicket,
+  
 }
