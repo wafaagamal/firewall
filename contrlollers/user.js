@@ -39,10 +39,9 @@ module.exports={
                            
                           // console.log("TOKEN++++++++++++++++", token.generateToken(result));
                            // token.generateToken(result)
-                           
-                            res.setHeader("ticket", token.generateToken(result))
-                            result.password=undefined;
-                           return res.status(200).json({result})
+                           result.password=undefined;
+                           var ticket=token.generateToken(result); 
+                           return res.status(200).json({result,"ticket":ticket})
                       
                       }else{
                           return res.status(400).send('invalid password')
