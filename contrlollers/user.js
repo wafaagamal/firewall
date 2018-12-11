@@ -1,6 +1,8 @@
 var User=require('./../models/user')
 let uCheck=require('ucheck')
 var Validation   = require('../static_arch/validation');
+var token=require('../security/manager/ticket')
+
 module.exports={
    Login:function(){
        return function(req,res){
@@ -33,8 +35,13 @@ module.exports={
                 if(err){return res.status(400).send('error')}
                 else{
                   if(result){
-                      if(user.isValidPass(req.body.password)){
-                            user.password=undefined;
+                      if(user.isValidPass(req.body.password,result.password)){
+                           
+                          // console.log("TOKEN++++++++++++++++", token.generateToken(result));
+                           // token.generateToken(result)
+                           
+                            res.setHeader("ticket", token.generateToken(result))
+                            result.password=undefined;
                            return res.status(200).json({result})
                       
                       }else{
@@ -42,7 +49,7 @@ module.exports={
                       }
 
                   }else{
-                                              
+                                            
                       return res.status(404).send('not found')
                   }
 
