@@ -1,3 +1,4 @@
+
 var mongoose = require('mongoose');
 var Schema   = mongoose.Schema;
 
@@ -30,7 +31,7 @@ var Session = mongoose.Schema({
 });
 
 
-Session.methods.createFor = function(user){
+Session.methods.createSessionFor = function(user){
     this.user = user._id;
     this.role = user.role;
     this.usage = {

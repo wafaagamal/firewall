@@ -17,8 +17,11 @@ var roles={
         ticketValidationInDays:30
     }
 }
-
+var getRole=function(role){
+    return roles[role]
+}
 module.exports={
     roles,
-    regHirarical
+    regHirarical,
+    getRole
 }

@@ -13,7 +13,7 @@ module.exports = {
         return function(req, res, next){
             if(ticketManager.isExists(req)){
                 console.log("TICKET");
-                console.log(req.headers.ticket)
+               console.log(req)
                 var decoded = null;
                 try {
                   decoded = ticketManager.verifiy(req);
@@ -29,8 +29,13 @@ module.exports = {
                     //very important to attach decoded to req.ticket
                     req.ticket = decoded;
                     //Logger.trace('info', 'security', `decoded ticket: ${JSON.stringify(req.ticket)}`)
+                    
                     if(roleManager.isRoleAllowed(req, allowedRoles)){
+                       
+                        console.log("ALLOWED",allowedRoles);
                         sessionManager.validateURN(req, function(opts){
+                            console.log("valid",opts.vaild);
+                            
                             if(opts.valid){
                                 if(sessionManager.hasVisits(opts.record)){
                                     next();

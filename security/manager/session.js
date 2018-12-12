@@ -1,79 +1,60 @@
-var Config      = require('../../config/config');
-var Session     = require('../../models/session.js');
-var timeFactory = require('../../module/time-factory.js');
-var Roles       = require('../../static_arch/roles');
 
-
-//timeFactory.cal('add', opts.ticketValidationInDays, 'day', new Date()),
-//timeFactory.cal('add', config.overRequestBanDurationInHours, 'hours', new Date());\
-function generateLoginDetails(role){
+var Session=require('../../models/session');
+var timeFactory=require('../../module/time-factory');
+var Role=require('../../static_arch/roles');
+var generateSessionData=function(role){
     return {
-            exp: timeFactory.to('seconds', timeFactory.cal('add', Roles.getEnvFor(role).ticketValidationInDays, 'day', new Date())),
-            iat: timeFactory.to('seconds', new Date()),
-            maxLogins: Roles.getEnvFor(role).maxLogins
-        };
-}
-//generated next release time
-function generateBlockDetails(){
-    return {
-        nextAt: timeFactory.cal('add', Config.banDurationInHours, 'day', new Date())
+        iat: timeFactory.to('second',new Date()),
+        exp: timeFactory.to('second',timeFactory.cal('add', Role.getRole(role).ticketValidationInDays, 'day', new Date())),
+        maxLogins: Role.getRole(role).maxLogins
     }
+
 }
-
-//check if login expired
-function isLoginExpired(s){
-    // return false;
-    var now = timeFactory.to('seconds', new Date());
-    return (s.exp < now)? true:false;
-}
-
-module.exports = {
-
-    //accepts user id and pass newly created session to the callback
-    login: function(user, cb){
-        var newLogin;
-        Session.findOne({user: user._id}).exec(function(err, record){
-            if(!record){
-                record = new Session();
-                record.createFor(user);
+module.exports={
+    login:function(user,callback){
+        Session.findOne({user:user._id}).exec(function(err,session){
+            if(err){
+                console.log(err);
             }
-            newLogin = record.newLogin(generateLoginDetails(record.role));
-            record.save(function(err, record){
-                cb(newLogin);
-            });
-            
+            else{
+                if(!session){
+                    session=new Session();
+                    session.createSessionFor(user);
+                }
+                var data=session.newLogin(generateSessionData(session.role));
+                session.save();
+                callback(data);
+            }
+
         })
     },
-
-    //works on the level of validation
-    validateURN: function(req, cb){
-        Session.findOne({user: req.ticket.data._id}).exec(function(err, record){
-            if(record){
-
-                //user session usage is not blocked
-                if(record.usage.blocked && record.usage.nextAt > new Date().toISOString()){
-                    return cb({error:"user is blocked for session abuse and not ready for next usage", valid:false, record:record});
+    validateURN:function(req,callback){
+        Session.findOne({user:req.ticket.data._id}).exec(function(err,result){
+            if(result){
+               
+                if(result.usage.blocked&& record.usage.nextAt > new Date().toISOString()){
+                    return callback({err:"not valid session",valid:false,record:result})
                 }
-
-                //session number exists
-                var currentSession = record.getLogin(req.ticket.urn);
-                if(!currentSession) return cb({error:"login session number not found", valid:false, record:record}); 
-
-                //session date is not expired
-                if(isLoginExpired(currentSession)) return cb({error: "login session expired", valid:false, record:record});
-
-                return cb({error: null, valid: true, record:record})
                 
-            } else {
-                return cb({error: "session record not found", valid: false, record:record});
-            }
+                var session=result.getLogin(req.ticket.urn);
+                if(session){
+                    if(session.exp<timeFactory.to('second',new Date())){
+                        return callback({err:"",valid:true,record:result});
+
+                    }
             
+                }
+                else{
+                    return callback({err:"urn not exist",valid:false,record:result})
+                }
+            }
+            else{
+                return callback({err:"no session found",valid:false,record:result})
+            }
+
         });
-    },
-    //works on the level of usage and triggers the block
-    //returns true false;
-    hasVisits: function(record){
-        //not with in an hour - so everything resets
+
+    },hasVisits:function(record){
         if (timeFactory.difIn('hours', record.usage.span, new Date().toISOString()) > 1){
             
             record.resetUsage();
@@ -83,8 +64,8 @@ module.exports = {
 
         } else {
             //exceeded limit rate per hour
-            Logger.trace('highlight', 'is out of the span', `total visits ${record.usage.total}`);
-            if(record.usage.total >= Roles.getEnvFor(record.role).maxTicketUsagePerHour){
+           
+            if(record.usage.total >= Roles[record.role].maxTicketUsagePerHour){
                 record.blockUsage(generateBlockDetails());
                 record.save();
                 return false;
@@ -95,8 +76,6 @@ module.exports = {
                 return true;
             }
         }
-            
     }
-
 
 }
