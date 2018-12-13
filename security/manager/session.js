@@ -31,18 +31,21 @@ module.exports={
     validateURN:function(req,callback){
         Session.findOne({user:req.ticket.data._id}).exec(function(err,result){
             if(result){
-               
                 if(result.usage.blocked&& record.usage.nextAt > new Date().toISOString()){
                     return callback({err:"not valid session",valid:false,record:result})
                 }
                 
-                var session=result.getLogin(req.ticket.urn);
+                var session=result.getLogin(req.ticket.session.urn);
+    
                 if(session){
-                    if(session.exp<timeFactory.to('second',new Date())){
+                
+                    if(session.exp>timeFactory.to('second',new Date())){
                         return callback({err:"",valid:true,record:result});
 
                     }
-            
+                    else{
+                        return callback({err:"Time limit",valid:false,record:result})
+                    }
                 }
                 else{
                     return callback({err:"urn not exist",valid:false,record:result})
@@ -64,12 +67,14 @@ module.exports={
 
         } else {
             //exceeded limit rate per hour
+          
            
-            if(record.usage.total >= Roles[record.role].maxTicketUsagePerHour){
+            if(record.usage.total >= Role.getRole(record.role).maxTicketUsagePerHour){
                 record.blockUsage(generateBlockDetails());
                 record.save();
                 return false;
             } else {
+                
             //record another visit
                 record.recordUsage();
                 record.save();

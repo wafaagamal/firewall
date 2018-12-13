@@ -1,5 +1,5 @@
-var User=require('//home//brightmoon//git//firewall//models//user.js')
-var role=require('//home//brightmoon//git//firewall//static_arch//roles.js')
+var User=require('../../models/user')
+var role=require('../../static_arch/roles')
 
 module.exports=function(){
     console.log("inside first============");

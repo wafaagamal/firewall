@@ -32,12 +32,11 @@ module.exports={
             console.log("Inside Login =======================");
             
             User.findOne({fullname:req.body.fullname}).exec(function(err,user){
-                if(err){return res.status(400).send('error')}
+                if(err){return res.status(400).send({error:'error'})}
                 else{
                   if(user){  
                       //if exist check for password
                       if(user.isValidPass(req.body.password)){
-                    
                            user.password=undefined;
                            //start new seesion when login
                            sessionManger.login(user,function(session){
@@ -48,11 +47,11 @@ module.exports={
                           
                       
                       }else{
-                          return res.status(400).send('invalid password')
+                          return res.status(400).send({error:'invalid password'})
                       }
 
                   }else{                      
-                      return res.status(404).send('not found')
+                      return res.status(404).send({error:'not found'})
                   }
 
                 }
@@ -91,15 +90,15 @@ module.exports={
                      if(err){console.log("ERROR");
                      }else{
                          if(!user){  
-                             console.log("ID+++++++++++++++++",req.ticket.id);
-                             
-                            user.createNewAdmin(req.body,req.ticket.id)
-                            user.save()
-                            user.password=undefined;
-                           return res.status(200).json({user})    
+                             var newAdmin=new User()
+                             newAdmin.createNewAdmin(req.body,req.ticket.data._id)
+                             newAdmin.save()
+                             delete newAdmin.password;
+                        
+                           return res.status(200).json({admin:newAdmin})    
                         }
                         else{
-                            return res.status(400).json('Already exists')
+                            return res.status(400).json({message:'Already exists'})
                         }
                            
                      }
@@ -133,16 +132,17 @@ module.exports={
             console.log("Inside add new stackholder =======================");
             
                 User.findOne({fullname:req.body.fullname}).exec(function(err,user){
-                    if(err){console.log("ERROR");
+                    if(err){console.log({error:"ERROR"});
                     }else{
                         if(!user){  
-                            user.createNewstackholder(req.body,req.ticket.id)
-                            user.save()
-                            user.password=undefined;
-                        return res.status(200).json({user})    
+                            var newstackholder=new User()
+                            newstackholder.createNewstackholder(req.body,req.ticket.data._id)
+                            newstackholder.save()
+                            delete newstackholder.password;
+                        return res.status(200).json({stackholder:newstackholder})    
                         }
                         else{
-                            return res.status(400).json('Already exists')
+                            return res.status(400).json({message:'Already exists'})
                         }
                         
                     }
@@ -151,7 +151,7 @@ module.exports={
         }
     }
   },
-  resetPassword: function(){
+resetPassword: function(){
         return function(req,res){
   
           var x = [{
@@ -172,15 +172,15 @@ module.exports={
                       User.findOne({_id:req.ticket.data._id}).exec(function(err,user){
                           if(user){
                               
-                             User.update({_id:req.ticket.data._id},{password:user.generateHash(req.body.password)}).exec(function(err,res){
+                             User.update({_id:req.ticket.data._id},{password:user.generateHash(req.body.password),resetedPass:true}).exec(function(err,user){
    
-                                return res.status(200).json("successfully reseted");
+                                return res.status(200).json({message:"successfully reseted"});
   
                              })
                           
                           }
                           else{
-                              return res.status(404).json("user not found");
+                              return res.status(404).json({error:"user not found"});
                           }
                       })
               
@@ -188,4 +188,6 @@ module.exports={
               }
           }
   }
+
+
 }

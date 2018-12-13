@@ -59,6 +59,8 @@ Session.methods.newLogin = function(opts){
 //check if session exists and not expired
 Session.methods.getLogin = function(urn){
     var s = this.sessions.find(e=>e.urn == urn);
+    //console.log("ssssssssss",s);
+    
     return (s)?s:false;
 }
 
