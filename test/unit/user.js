@@ -149,12 +149,10 @@ describe("Testing  User", function () {
       })
   })
 
-})
 
 
-describe("Testing for validation Create & Access route",function(){
 
-  this.timeout(10000);
+
     it("should return invalid fullname Length too short",function(done){
       var context=this
       currentUser=generateUser()
@@ -511,7 +509,7 @@ describe("Testing for validation Create & Access route",function(){
     });
   });
 
-})
 
+})
 
 }

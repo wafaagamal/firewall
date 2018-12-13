@@ -93,12 +93,17 @@ module.exports={
                              var newAdmin=new User()
                              newAdmin.createNewAdmin(req.body,req.ticket.data._id)
                              newAdmin.save()
-                             delete newAdmin.password;
-                        
-                           return res.status(200).json({admin:newAdmin})    
+                             const admin=Object.keys(newAdmin._doc).reduce((obj,key)=>{
+                                  if(key !=='password'){
+                                      obj[key]=newAdmin._doc[key]
+                                  }
+                                  return obj
+                             },{})
+
+                           return res.status(200).json({admin:admin})    
                         }
                         else{
-                            return res.status(400).json({message:'Already exists'})
+                            return res.status(400).json({error:'Already exists'})
                         }
                            
                      }
@@ -138,11 +143,17 @@ module.exports={
                             var newstackholder=new User()
                             newstackholder.createNewstackholder(req.body,req.ticket.data._id)
                             newstackholder.save()
-                            delete newstackholder.password;
-                        return res.status(200).json({stackholder:newstackholder})    
+                          
+                            const stackholder=Object.keys(newstackholder._doc).reduce((obj,key)=>{
+                                if(key !=='password'){
+                                    obj[key]=newstackholder._doc[key]
+                                }
+                                return obj
+                           },{})
+                        return res.status(200).json({stackholder:stackholder})    
                         }
                         else{
-                            return res.status(400).json({message:'Already exists'})
+                            return res.status(400).json({error:'Already exists'})
                         }
                         
                     }
@@ -150,44 +161,58 @@ module.exports={
         
         }
     }
-  },
-resetPassword: function(){
-        return function(req,res){
-  
-          var x = [{
-                
-                  param: 'password',
-                  label: 'Password',
-                  required: true,
-                  type: 'string',
-                  length: { min: Validation.length.password.min , max: Validation.length.password.max},
-                  regex: Validation.regex.password
-          }]
-  
-          let ucheck = new uCheck.validate(req).scenario(x);
-                  if(ucheck.hasErrors()) {
-                      return res.status(400).json({error: ucheck.getErrors()});
-                  }else{
-                      console.log("reset password =======================");
-                      User.findOne({_id:req.ticket.data._id}).exec(function(err,user){
-                          if(user){
-                              
-                             User.update({_id:req.ticket.data._id},{password:user.generateHash(req.body.password),resetedPass:true}).exec(function(err,user){
-   
-                                return res.status(200).json({message:"successfully reseted"});
-  
-                             })
-                          
-                          }
-                          else{
-                              return res.status(404).json({error:"user not found"});
-                          }
-                      })
-              
-  
-              }
-          }
-  }
+  },resetPassword: function(){
+    return function(req,res){
 
+      var x = [{
+            
+              param: 'password',
+              label: 'Password',
+              required: true,
+              type: 'string',
+              length: { min: Validation.length.password.min , max: Validation.length.password.max},
+              regex: Validation.regex.password
+      }]
+
+      let ucheck = new uCheck.validate(req).scenario(x);
+              if(ucheck.hasErrors()) {
+                  return res.status(400).json({error: ucheck.getErrors()});
+              }else{
+                  console.log("reset password =======================");
+                  User.findOne({_id:req.ticket.data._id}).exec(function(err,user){
+                      if(user){
+                            User.update({_id:req.ticket.data._id},{password:user.generateHash(req.body.password),resetedPass:true}).exec(function(err,user){
+
+                                return res.status(200).json({message:"successfully reseted"});
+                          }) 
+                         
+                      
+                      }
+                      else{
+                          return res.status(404).json({error:"user not found"});
+                      }
+                  })
+          
+
+          }
+      }
+    },
+    logOut:function () {
+        return function(req,res){
+            sessionManger.findOne({_id:req.ticket.data._id}).exec(function(err,result){
+                if(err){ console.log({error:"ERROR"}) }
+                else{
+                    if(result){
+                        console.log(result);
+                        
+                    }
+                }
+            })
+        }
+       
+    }
 
 }
+
+
+

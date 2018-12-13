@@ -14,7 +14,7 @@ module.exports=function(){
               return false
           }else{
               var user=new User()
-              console.log("####################");
+              console.log("####################FirstAdmin######################");
               user.createFirstAdmin({
                   fullname:process.env.Fullname,
                   password:process.env.Password     
