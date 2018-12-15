@@ -12,7 +12,7 @@ var config = require('../../config/config');
 var server = supertest.agent(config.host);
 
 var helper = require('../test-helper');
-var ticket="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVjMTIzNTIzNzg0MjIxNWE5MWVlY2M0YiIsInJvbGUiOiJhZG1pbiJ9LCJzZXNzaW9uIjp7InVybiI6OTUwMDIwMDgwLCJleHAiOjE1NDcyODkxMjUwMDAwMDAsImlhdCI6MTU0NDY5NzEyNTAwMDAwMH0sImlhdCI6MTU0NDY5NzEyNX0.DSPwsXBVCMt0U6xtqunQeS5f2qjU4LE__2PUC-jlDCo";
+var ticket="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjVjMTRlZTYyMDRjMDUzMjA1YTdiMmQzMCIsInJvbGUiOiJhZG1pbiJ9LCJzZXNzaW9uIjp7InVybiI6MjM1MDY2OTExLCJleHAiOjE1NDc0NjgyNDAwMDAwMDAsImlhdCI6MTU0NDg3NjI0MDAwMDAwMH0sImlhdCI6MTU0NDg3NjI0MH0.heDa78Qgok0IuLIQ_-ChojDKN-KdQ1miiQRdV9ggTcE";
 var currentUser;
 
 
@@ -149,8 +149,7 @@ describe("Testing  User", function () {
       })
   })
 
-
-
+  
 
 
     it("should return invalid fullname Length too short",function(done){
@@ -508,6 +507,58 @@ describe("Testing  User", function () {
       }
     });
   });
+
+  it("LogOut",function(done){
+    var context=this
+    
+      server
+      .post('/logout')
+      .set("ticket",ticket)
+      .expect("Content-type",/json/)
+      .expect(200)
+      .end(function(err,res){
+          if(res.body){
+              res.status.should.equal(200);
+              done()
+
+              addContext(context, {
+                title: 'sent object',
+                value: JSON.stringify({})
+            });
+    
+            addContext(context, {
+                title: 'response object',
+                value: JSON.stringify(res.body)
+            });
+          }
+      })
+  })
+
+  it("LogOut should return error invalid ticket",function(done){
+    var context=this
+      server
+      .post('/logout')
+      .set("ticket",ticket+1)
+      .expect("Content-type",/json/)
+      .expect(401)
+      .end(function(err,res){
+          if(res){
+              res.status.should.equal(401);
+              done()
+
+              addContext(context, {
+                title: 'sent object',
+                value: JSON.stringify({})
+            });
+    
+            addContext(context, {
+                title: 'response object',
+                value: JSON.stringify({})
+            });
+          }
+      })
+  })
+
 
 
 })

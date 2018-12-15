@@ -4,6 +4,7 @@ var Validation   = require('../static_arch/validation');
 var token=require('../security/manager/ticket')
 var Roles=require('../static_arch/roles')
 var sessionManger=require('../security/manager/session')
+var Session =require('../models/session');
 module.exports={
    Login:function(){
        return function(req,res){
@@ -199,18 +200,32 @@ module.exports={
     },
     logOut:function () {
         return function(req,res){
-            sessionManger.findOne({_id:req.ticket.data._id}).exec(function(err,result){
+            Session.findOne({user:req.ticket.data._id}).exec(function(err,result){
+              
                 if(err){ console.log({error:"ERROR"}) }
                 else{
                     if(result){
-                        console.log(result);
-                        
+                        var arr=(result.sessions).filter(s=>s.urn!=req.ticket.session.urn);
+                        Session.update({user:req.ticket.data._id},{sessions:arr}).exec(function(err,result2){
+                            if(err){console.log("ERROR");
+                        }else{
+                                if(result2){
+                                    return res.status(200).json({});
+                                }
+                            }
+                        })
                     }
+                    else{
+                        return res.status(404).json({error:'invalid session'});
+                    }
+                    
                 }
-            })
+        
+         })
+    
         }
-       
     }
+    
 
 }
 
