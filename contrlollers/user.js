@@ -35,7 +35,9 @@ module.exports={
             User.findOne({fullname:req.body.fullname}).exec(function(err,user){
                 if(err){return res.status(400).send({error:'error'})}
                 else{
-                  if(user){  
+                  if(user){ 
+                    res.header('Access-Control-Allow-Origin', "*");
+ 
                       //if exist check for password
                       if(user.isValidPass(req.body.password)){
                            user.password=undefined;
@@ -43,6 +45,7 @@ module.exports={
                            sessionManger.login(user,function(session){
                                 //console.log("SESSION",session);
                                 var ticket=token.sign({data:{_id:user._id,role:user.role},session}); 
+
                                 return res.status(200).json({user,"ticket":ticket})
                             })
                           
